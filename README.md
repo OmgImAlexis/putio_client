@@ -4,13 +4,16 @@ I'd suggest you use Docker for this.
 
 ````
 git clone https://github.com/OmgImAlexis/putio_client.git && cd putio_client
-echo "{}" >> config.json
+echo '{    "putio": {        "token": "FAKE_TOKEN"    }}' >> config.json
 npm install
 docker run -d -p 3000:3000 \
     -v "$PWD":/app \
     -w /app \
     mhart/alpine-node node app.js
 ````
+
+You'll need to open the config.json and replace `FAKE_TOKEN` with your Put.io API token you can get that [here](https://put.io/v2/oauth2/register).
+Just fill in the details and copy the "Oauth Token" from the page after you submit the form.
 
 If you're running this on UNRAID then SSH into the machine and run this instead of the Docker command.
 Make sure the repo is cloned into `/mnt/user/appdata/putio_client/`.
