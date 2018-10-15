@@ -35,8 +35,13 @@ module.exports = (function() {
                 api.transfers.add(torrent.infoHash);
                 console.log('Added ' + torrent.name);
             });
+            return res.sendStatus(200);
+	} else if(req.query.action === 'getsettings'){
+            return res.send({"build": 44632, "settings": [
+                    ["install_modification_time", 0, "0", {"access":"Y"}]
+                ]
+            });
         }
-        return res.sendStatus(200);
     });
 
     app.get('*', function(req, res){
