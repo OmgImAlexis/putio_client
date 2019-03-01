@@ -1,5 +1,7 @@
 # putio_client
 
+This is a fork of OmgImAlexis' put.io utorrent proxy client node app. Wow that was a mouthful... I modified this to work with sonarr in particular, and have no idea if it'll work with sickrage still (although I have no reason to believe it doesn't). Also haven't tested with unraid... Honestly, Omg's repo was seemingly abandoned, so I just made this work for myself. 
+
 I'd suggest you use Docker for this.
 
 ````
