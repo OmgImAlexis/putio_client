@@ -80,6 +80,9 @@ module.exports = (function () {
             });
         }
     });
+
+    app.post('*', function (req, res, next) {
+        if (req.query.token === config.get('apiKey')) {
             next();
         } else {
             res.send({
