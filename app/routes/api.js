@@ -99,7 +99,7 @@ module.exports = (function () {
 		    return res.status(500).end();
                 }
 		console.log('Adding ' + torrent.name);
-                api.transfers.add(torrent.infoHash, parent_id = 532048861);
+                api.transfers.add(torrent.infoHash, parent_id = config.get('putio:id'));
                 console.log('Added ' + torrent.name);
             });
             return res.send({});
@@ -123,7 +123,7 @@ module.exports = (function () {
                 ret_data = {
                     "build": 44994
                     , "torrents": []
-                    , "label": [["shows", 532048861]]
+                    , "label": [[config.get("putio:folder"), config.get('putio:id')]]
                     , "torrentc": "994925276"
                     , "rssfeeds": []
                     , "rssfilters": []
