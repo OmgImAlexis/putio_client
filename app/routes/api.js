@@ -3,6 +3,8 @@ const path = require('path');
 const config = require('cz');
 const readTorrent = require('read-torrent');
 const PutIO = require('put.io-v2');
+const multiparty = require('connect-multiparty');
+const multipartMiddleware = multiparty();
 
 config.load(path.normalize(__dirname + '/../../config.json'));
 config.args();
@@ -12,9 +14,9 @@ function determine_status_value(status) {
     if (status === 'DOWNLOADING') {
         return 1;
     } else if (status === 'COMPLETED') {
-        return 136;	
+        return 136;
     } else if (status === 'IN_QUEUE') {
-        return 64;	
+        return 64;
     } else if (status === 'SEEDING') {
         return 136;
     }
@@ -24,7 +26,7 @@ function determine_status_value(status) {
 
 function validate_eta(eta) {
     if (eta === null) {
-	return 0;
+        return 0;
     }
     return eta;
 }
@@ -32,9 +34,9 @@ function validate_eta(eta) {
 function validate_availability(availability, total) {
     var MAX_INT32 = Math.pow(2, 31) - 1;
     if (availability === null) {
-	if (total > MAX_INT32) {
-	    return MAX_INT32;
-	}
+        if (total > MAX_INT32) {
+            return MAX_INT32;
+        }
         return total;
     } else if (availability > MAX_INT32) {
         return MAX_INT32;
@@ -44,7 +46,7 @@ function validate_availability(availability, total) {
 
 function determine_remaining(size, downloaded, status) {
     if (status === 'COMPLETED') {
-	return 0;
+        return 0;
     }
     var remaining = size - downloaded;
     var MAX_INT32 = Math.pow(2, 31) - 1;
@@ -67,7 +69,7 @@ module.exports = (function () {
     const api = new PutIO(config.get('putio:token'));
 
     app.get('/gui/token.html', function (req, res) {
-	console.log('Authenticating...');
+        console.log('Authenticating...');
         res.send('<div id="token" style="display:none;">' + config.get('apiKey') + '</div>');
     });
 
@@ -91,14 +93,32 @@ module.exports = (function () {
         }
     });
 
+    app.post('/gui/', multipartMiddleware, function (req, res) {
+        if (req.query.action === 'add-file') {
+            readTorrent(req.files.torrent_file.path, function (err, torrent) {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).end();
+                }
+                console.log('Adding ' + torrent.name);
+                api.transfers.add(torrent.infoHash, parent_id = config.get('putio:id'));
+                console.log('Added ' + torrent.name);
+            });
+            return res.end();
+        } else {
+            console.log('invalid endpoint: ' + req.query.action);
+            console.log('query parameters: ' + req.query);
+            return res.status(400).end();
+        }
+    });
     app.get('/gui/', function (req, res) {
         if (req.query.action === 'add-url') {
             readTorrent(req.query.s, function (err, torrent) {
                 if (err) {
                     console.log(err);
-		    return res.status(500).end();
+                    return res.status(500).end();
                 }
-		console.log('Adding ' + torrent.name);
+                console.log('Adding ' + torrent.name);
                 api.transfers.add(torrent.infoHash, parent_id = config.get('putio:id'));
                 console.log('Added ' + torrent.name);
             });
@@ -116,7 +136,7 @@ module.exports = (function () {
             return res.status(200).end();
         } else if (req.query.action === 'removedata') {
             api.transfers.cancel(req.query.hash);
-	    console.log('Canceled torrent ' + req.query.hash);
+            console.log('Canceled torrent ' + req.query.hash);
             return res.status(200).end();
         } else if (req.query.list === '1') {
             api.transfers.list(function (data) {
@@ -129,38 +149,38 @@ module.exports = (function () {
                     , "rssfilters": []
                 }
                 for (var transfer_index in data.transfers) {
-		    var transfer = data.transfers[transfer_index];
-		    var detail = [
-			transfer.id,
-			determine_status_value(transfer.status),	
-			transfer.name,
-			validate_size(transfer.size),
-			transfer.percent_done * 10,
-			transfer.downloaded,
-			transfer.uploaded,
-			Math.round(transfer.current_ratio * 100),
-			transfer.up_speed,
-			transfer.down_speed,
-			validate_eta(transfer.estimated_time),
-			"shows",
-			transfer.peers_connected,
-			transfer.peers_getting_from_us + transfer.peers_sending_to_us,
-			transfer.peers_connected,
-			transfer.peers_sending_to_us,
-			validate_availability(transfer.availability, transfer.size),
-			transfer.id, 
-			determine_remaining(transfer.size, transfer.downloaded, transfer.status),
-			"",
-			"",
-			transfer.status,
-			"1",
-			1550730519,
-			0,
-			"",
+                    var transfer = data.transfers[transfer_index];
+                    var detail = [
+                        transfer.id,
+                        determine_status_value(transfer.status),
+                        transfer.name,
+                        validate_size(transfer.size),
+                        transfer.percent_done * 10,
+                        transfer.downloaded || 0,
+                        transfer.uploaded || 0,
+                        Math.round(transfer.current_ratio * 100),
+                        transfer.up_speed || 0,
+                        transfer.down_speed || 0,
+                        validate_eta(transfer.estimated_time),
+                        config.get("putio:folder"),
+                        transfer.peers_connected || 0,
+                        transfer.peers_getting_from_us + transfer.peers_sending_to_us,
+                        transfer.peers_connected || 0,
+                        transfer.peers_sending_to_us || 0,
+                        validate_availability(transfer.availability, transfer.size),
+                        transfer.id,
+                        determine_remaining(transfer.size, transfer.downloaded, transfer.status),
+                        "",
+                        "",
+                        transfer.status,
+                        "1",
+                        1550730519,
+                        0,
+                        "",
                         config.get('putio:download_dir'),
-			0,
-			"4767C3CE"
-		    ];
+                        0,
+                        "4767C3CE"
+                    ];
                     ret_data['torrents'].push(detail);
                 }
                 return res.json(ret_data);
