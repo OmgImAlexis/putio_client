@@ -12,16 +12,18 @@ config.store('disk');
 
 function determine_status_value(status) {
     if (status === 'DOWNLOADING') {
-        return 1;
+        return 1;  // Started
+    } else if (status === 'COMPLETING' || status === 'SAVING') {
+        return 130;  // Loaded + Checking
     } else if (status === 'COMPLETED') {
-        return 136;
-    } else if (status === 'IN_QUEUE') {
-        return 64;
-    } else if (status === 'SEEDING') {
-        return 136;
+        return 136;  // Loaded + Checked
+    } else if (status === 'IN_QUEUE' || status === 'WAITING') {
+        return 64;  // Queued
+    } else if (status === 'SEEDING' || status === 'PREPARING_SEED') {
+        return 136;  // Loaded + Checked
+    } else {
+        return 16;  // ERROR
     }
-    console.log(status);
-    return 16;
 }
 
 function validate_eta(eta) {

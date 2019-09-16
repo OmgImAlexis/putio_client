@@ -33,6 +33,6 @@ app.use(methodOverride());
 
 app.use('/', require('./app/routes/api'));
 
-app.listen(config.get('web:port'), function() {
+app.listen(config.get('web:port'), function () {
     console.log('The server is running on port %s', config.get('web:port'));
 });
