@@ -1,0 +1,12 @@
+{
+    "web": {
+        "port": 3000
+    },
+    "apiKey": "MY_API_KEY",
+    "putio": {
+        "token": "MY_PUTIO_TOKEN",
+        "folder": "shows",
+        "download_dir": "/downloads/shows/",
+        "id": 123456789
+    }
+}
